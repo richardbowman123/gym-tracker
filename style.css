@@ -656,3 +656,96 @@ select.input-field { padding-right: 30px; }
   -webkit-tap-highlight-color: transparent;
 }
 .data-btn.danger { color: var(--red); border-color: var(--red); }
+
+/* === Sync Indicator === */
+.sync-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.sync-dot.synced  { background: var(--green); }
+.sync-dot.syncing { background: var(--orange); animation: pulse 1s infinite; }
+.sync-dot.offline { background: var(--text-muted); }
+.sync-dot.error   { background: var(--red); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.sync-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* === Login Overlay === */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.login-overlay.hidden { display: none; }
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+.login-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.login-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+.login-card .input-field {
+  margin-bottom: 12px;
+}
+.login-error {
+  color: var(--red);
+  font-size: 13px;
+  min-height: 20px;
+  margin-bottom: 8px;
+}
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+.login-btn:active { opacity: 0.8; }
+.login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.login-skip-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 16px;
+  padding: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+.login-skip-btn:hover { color: var(--text-secondary); }

@@ -27,12 +27,16 @@ function addSet(setData) {
   const newSet = { id: generateId(), created: new Date().toISOString(), ...setData };
   sets.push(newSet);
   saveSets(sets);
+  // Sync to cloud in background
+  if (typeof pushSet === 'function') pushSet(newSet);
   return newSet;
 }
 
 function deleteSet(id) {
   const sets = getAllSets().filter(s => s.id !== id);
   saveSets(sets);
+  // Remove from cloud in background
+  if (typeof removeSet === 'function') removeSet(id);
 }
 
 function getPrefs() {
@@ -1036,5 +1040,5 @@ function init() {
   document.getElementById('log-date').addEventListener('change', renderTodaySets);
 }
 
-// Start the app
-document.addEventListener('DOMContentLoaded', init);
+// App startup is handled by supabase.js (calls init() after auth resolves)
+// If supabase.js is missing, uncomment: document.addEventListener('DOMContentLoaded', init);

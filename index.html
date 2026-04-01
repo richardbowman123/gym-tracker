@@ -15,7 +15,25 @@
 
   <header>
     <h1>GYM TRACKER</h1>
+    <div class="sync-indicator">
+      <span id="sync-dot" class="sync-dot offline"></span>
+      <span id="sync-label" class="sync-label">Local only</span>
+    </div>
   </header>
+
+  <!-- Login overlay -->
+  <div id="login-overlay" class="login-overlay hidden">
+    <div class="login-card">
+      <h2 class="login-title">GYM TRACKER</h2>
+      <p class="login-subtitle">Sign in to sync across devices</p>
+      <input type="email" id="login-email" class="input-field" placeholder="Email">
+      <input type="password" id="login-password" class="input-field" placeholder="Password"
+        onkeydown="if(event.key==='Enter') handleLogin()">
+      <div id="login-error" class="login-error"></div>
+      <button id="login-btn" class="login-btn" onclick="handleLogin()">Sign In</button>
+      <button class="login-skip-btn" onclick="hideLoginOverlay(); setSyncStatus('offline'); init();">Use without account</button>
+    </div>
+  </div>
 
   <main>
     <!-- ===== HOME TAB ===== -->
@@ -138,7 +156,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="data.js"></script>
+  <script src="supabase.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
