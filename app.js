@@ -49,8 +49,23 @@ function savePrefs(prefs) {
 }
 
 function initSeedData() {
-  if (getAllSets().length > 0) return; // Already has data
-  const sets = SEED_DATA.map(row => ({
+  const existing = getAllSets();
+
+  // Build a set of fingerprints for records we already have
+  // (date + exercise + weight + reps uniquely identifies a seed entry)
+  const fingerprints = new Set(
+    existing.map(s => `${s.date}|${s.exercise}|${s.weight}|${s.reps}`)
+  );
+
+  // Only add seed entries that aren't already present
+  const missing = SEED_DATA.filter(row => {
+    const fp = `${row[0]}|${row[1]}|${row[2]}|${row[3]}`;
+    return !fingerprints.has(fp);
+  });
+
+  if (missing.length === 0) return; // All seed data already loaded
+
+  const newSets = missing.map(row => ({
     id: generateId() + Math.random().toString(36).substr(2, 3),
     date: row[0],
     exercise: row[1],
@@ -60,7 +75,9 @@ function initSeedData() {
     notes: row[5] || '',
     created: row[0] + 'T12:00:00Z',
   }));
-  saveSets(sets);
+
+  const merged = [...existing, ...newSets].sort((a, b) => a.date.localeCompare(b.date));
+  saveSets(merged);
 }
 
 // ==========================================
