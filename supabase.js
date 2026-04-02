@@ -79,10 +79,18 @@ async function fetchAllSets() {
     return null;
   }
 
-  // Overwrite localStorage with cloud data
-  localStorage.setItem('gym_sets', JSON.stringify(data));
+  // Merge cloud data with local data (never lose local records)
+  const localSets = JSON.parse(localStorage.getItem('gym_sets') || '[]');
+  const merged = new Map();
+  // Add all local records first
+  for (const s of localSets) merged.set(s.id, s);
+  // Layer cloud records on top (cloud wins if same ID exists in both)
+  for (const s of data) merged.set(s.id, s);
+  const mergedArray = [...merged.values()].sort((a, b) => a.date.localeCompare(b.date));
+
+  localStorage.setItem('gym_sets', JSON.stringify(mergedArray));
   setSyncStatus('synced');
-  return data;
+  return mergedArray;
 }
 
 async function pushSet(setData) {
@@ -111,26 +119,28 @@ async function removeSet(id) {
 
 async function seedIfEmpty() {
   if (!db) return;
-  // Check if user already has cloud data
-  const { count, error } = await db
+
+  // Fetch all cloud record IDs so we know what's already uploaded
+  const { data: cloudData, error } = await db
     .from('sets')
-    .select('id', { count: 'exact', head: true });
+    .select('id');
 
   if (error) {
     console.error('Seed check error:', error);
     return;
   }
 
-  if (count > 0) return; // Already has data in the cloud
-
-  // Upload seed data from localStorage
+  const cloudIds = new Set((cloudData || []).map(r => r.id));
   const localSets = JSON.parse(localStorage.getItem('gym_sets') || '[]');
-  if (localSets.length === 0) return;
+
+  // Find local records that aren't in the cloud yet
+  const missing = localSets.filter(s => !cloudIds.has(s.id));
+  if (missing.length === 0) return; // Everything is already synced
 
   setSyncStatus('syncing');
   // Upload in batches of 50 to avoid request size limits
-  for (let i = 0; i < localSets.length; i += 50) {
-    const batch = localSets.slice(i, i + 50).map(s => ({
+  for (let i = 0; i < missing.length; i += 50) {
+    const batch = missing.slice(i, i + 50).map(s => ({
       id: s.id,
       date: s.date,
       exercise: s.exercise,
@@ -148,7 +158,7 @@ async function seedIfEmpty() {
     }
   }
   setSyncStatus('synced');
-  console.log(`Seeded ${localSets.length} sets to cloud`);
+  console.log(`Uploaded ${missing.length} local records to cloud`);
 }
 
 // ==========================================
@@ -201,10 +211,14 @@ async function handleLogout() {
 // ==========================================
 
 async function startApp() {
-  // Fetch cloud data, then seed if this is a first-time user
-  await fetchAllSets();
+  // Always ensure seed/historic data is in localStorage first
+  // (initSeedData only adds if localStorage is empty)
+  initSeedData();
+
+  // Upload any local-only records to the cloud
   await seedIfEmpty();
-  // If seeding happened, re-fetch to get server-side defaults
+
+  // Merge cloud data with local data (never overwrites)
   await fetchAllSets();
 
   // Now run the main app init from app.js
